@@ -1,6 +1,7 @@
 from flask import Flask, render_template_string, request
 import requests
 import feedparser
+from textblob import TextBlob
 
 app = Flask(__name__)
 
@@ -20,14 +21,24 @@ def aggregate_news(api_key, rss_urls, query):
         articles.extend(fetch_rss_feed(url))
     return articles
 
+def analyze_sentiment(text):
+    blob = TextBlob(text)
+    sentiment = blob.sentiment.polarity
+    if sentiment > 0:
+        return "Positive"
+    elif sentiment < 0:
+        return "Negative"
+    else:
+        return "Neutral"
+
 rss_urls = [
     'https://rss.cnn.com/rss/edition_technology.rss',
     'https://feeds.bbci.co.uk/news/technology/rss.xml'
 ]
 
 with open('news_api_key.txt', 'r') as file:
-    api_key = file.read().strip() 
-    
+    api_key = file.read().strip()
+
 @app.route('/')
 def home():
     query = request.args.get('query', 'technology')
@@ -35,6 +46,8 @@ def home():
     show_all = request.args.get('show_all', 'false') == 'true'
     num_articles = len(articles)
     articles_to_show = articles if show_all else articles[:10]
+    for article in articles_to_show:
+        article['sentiment'] = analyze_sentiment(article['description'] if 'description' in article else article['summary'])
     return render_template_string(html_content, articles=articles_to_show, num_articles=num_articles, show_all=show_all, query=query)
 
 html_content = '''
@@ -49,6 +62,8 @@ html_content = '''
       .container { max-width: 800px; margin: 0 auto; padding: 20px; }
       h1 { text-align: center; }
       .article { margin-bottom: 20px; }
+      .sentiment { font-weight: bold; display: flex; align-items: center; }
+      .sentiment img { margin-right: 10px; }
       .more-button { display: flex; justify-content: center; }
       .search-container { text-align: center; margin-bottom: 20px; }
       .search-box { display: none; margin-top: 10px; }
@@ -73,6 +88,18 @@ html_content = '''
         <div class="article">
           <h2>{{ article['title'] if 'title' in article else article.title }}</h2>
           <p>{{ article['description'] if 'description' in article else article.summary }}</p>
+          <p class="sentiment">
+            {% if article['sentiment'] == 'Positive' %}
+              <img src="{{ url_for('static', filename='positive_sentiment.png') }}" alt="Positive" width="20" height="20"> 
+              Sentiment: Positive
+            {% elif article['sentiment'] == 'Negative' %}
+              <img src="{{ url_for('static', filename='negative_sentiment.png') }}" alt="Negative" width="20" height="20"> 
+              Sentiment: Negative
+            {% else %}
+              <img src="{{ url_for('static', filename='neutral_sentiment.png') }}" alt="Neutral" width="20" height="20"> 
+              Sentiment: Neutral
+            {% endif %}
+          </p>
           <a href="{{ article['url'] if 'url' in article else article.link }}" target="_blank">Read more</a>
         </div>
       {% endfor %}
