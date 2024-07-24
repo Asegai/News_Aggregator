@@ -26,15 +26,16 @@ rss_urls = [
 ]
 
 with open('news_api_key.txt', 'r') as file:
-    api_key = file.read().strip()
-
+    api_key = file.read().strip() 
+    
 @app.route('/')
 def home():
-    articles = aggregate_news(api_key, rss_urls, 'technology')
+    query = request.args.get('query', 'technology')
+    articles = aggregate_news(api_key, rss_urls, query)
     show_all = request.args.get('show_all', 'false') == 'true'
     num_articles = len(articles)
     articles_to_show = articles if show_all else articles[:10]
-    return render_template_string(html_content, articles=articles_to_show, num_articles=num_articles, show_all=show_all)
+    return render_template_string(html_content, articles=articles_to_show, num_articles=num_articles, show_all=show_all, query=query)
 
 html_content = '''
 <!doctype html>
@@ -49,11 +50,25 @@ html_content = '''
       h1 { text-align: center; }
       .article { margin-bottom: 20px; }
       .more-button { display: flex; justify-content: center; }
+      .search-container { text-align: center; margin-bottom: 20px; }
+      .search-box { display: none; margin-top: 10px; }
+      .search-button { background: none; border: none; cursor: pointer; }
     </style>
   </head>
   <body>
     <div class="container">
       <h1>News Aggregator</h1>
+      <div class="search-container">
+        <button class="search-button" onclick="toggleSearchBox()">
+          <img src="{{ url_for('static', filename='search.png') }}" alt="Search" width="24" height="24">
+        </button>
+        <div class="search-box" id="searchBox">
+          <form action="/" method="get">
+            <input type="text" name="query" value="{{ query }}" placeholder="Search...">
+            <button type="submit">Search</button>
+          </form>
+        </div>
+      </div>
       {% for article in articles %}
         <div class="article">
           <h2>{{ article['title'] if 'title' in article else article.title }}</h2>
@@ -63,10 +78,20 @@ html_content = '''
       {% endfor %}
       {% if not show_all and num_articles > 10 %}
         <div class="more-button">
-          <a href="/?show_all=true"><button>More Articles</button></a>
+          <a href="/?query={{ query }}&show_all=true"><button>More</button></a>
         </div>
       {% endif %}
     </div>
+    <script>
+      function toggleSearchBox() {
+        var searchBox = document.getElementById('searchBox');
+        if (searchBox.style.display === 'none') {
+          searchBox.style.display = 'block';
+        } else {
+          searchBox.style.display = 'none';
+        }
+      }
+    </script>
   </body>
 </html>
 '''
