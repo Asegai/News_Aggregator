@@ -31,9 +31,16 @@ def analyze_sentiment(text):
     else:
         return "Neutral"
 
+def filter_removed_articles(articles):
+    return [
+        article for article in articles 
+        if article.get('title') and '[Removed]' not in article['title'] and
+           article.get('description') and '[Removed]' not in article['description']
+    ]
+
 rss_urls = [
-    'https://rss.cnn.com/rss/edition_technology.rss',
-    'https://feeds.bbci.co.uk/news/technology/rss.xml'
+    'https://rss.cnn.com/rss/edition_tech.rss',
+    'https://feeds.bbci.co.uk/news/tech/rss.xml'
 ]
 
 with open('news_api_key.txt', 'r') as file:
@@ -41,8 +48,9 @@ with open('news_api_key.txt', 'r') as file:
 
 @app.route('/')
 def home():
-    query = request.args.get('query', 'technology')
+    query = request.args.get('query', 'tech')
     articles = aggregate_news(api_key, rss_urls, query)
+    articles = filter_removed_articles(articles)
     show_all = request.args.get('show_all', 'false') == 'true'
     num_articles = len(articles)
     articles_to_show = articles if show_all else articles[:10]
@@ -56,23 +64,82 @@ html_content = '''
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>News Aggregator</title>
+    <title>News Central</title>
     <style>
-      body { font-family: Arial, sans-serif; }
-      .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-      h1 { text-align: center; }
-      .article { margin-bottom: 20px; }
-      .sentiment { font-weight: bold; display: flex; align-items: center; }
-      .sentiment img { margin-right: 10px; }
-      .more-button { display: flex; justify-content: center; }
-      .search-container { text-align: center; margin-bottom: 20px; }
-      .search-box { display: none; margin-top: 10px; }
-      .search-button { background: none; border: none; cursor: pointer; }
+      @font-face {
+        font-family: 'The Bride In Hacienda';
+        src: url("{{ url_for('static', filename='the_bride_in_hacienda.ttf') }}") format('truetype');
+      }
+      body { 
+        font-family: Arial, sans-serif; 
+        background-color: #FFA500;
+        color: #FFFFFF;
+        transition: background-color 0.3s, color 0.3s;
+        text-shadow: 2px 2px 4px #000000;
+      }
+      .dark-mode { 
+        background-color: #121212; 
+        color: #e0e0e0; 
+        text-shadow: 2px 2px 4px #000000;
+      }
+      .container { 
+        max-width: 800px; 
+        margin: 0 auto; 
+        padding: 20px; 
+      }
+      h1 { 
+        text-align: center; 
+        font-family: 'The Bride In Hacienda', Arial, sans-serif; 
+        font-size: 3em; 
+        font-weight: bold;
+        color: #FFFFFF;
+        text-shadow: 3px 3px 6px #000000;
+      }
+      h2, p {
+        font-weight: bold;
+        color: #FFFFFF;
+        text-shadow: 2px 2px 4px #000000;
+      }
+      .sentiment { 
+        display: flex; 
+        align-items: center; 
+      }
+      .sentiment img { 
+        margin-right: 10px; 
+      }
+      .more-button { 
+        display: flex; 
+        justify-content: center; 
+      }
+      .search-container { 
+        text-align: center; 
+        margin-bottom: 20px; 
+      }
+      .search-box { 
+        display: none; 
+        margin-top: 10px; 
+      }
+      .search-button { 
+        background: none; 
+        border: none; 
+        cursor: pointer; 
+      }
+      .dark-mode-toggle { 
+        position: absolute; 
+        top: 10px; 
+        left: 10px; 
+        cursor: pointer; 
+      }
+      a {
+        color: #FFFFFF;
+        text-shadow: 2px 2px 4px #000000;
+      }
     </style>
   </head>
   <body>
+    <img src="{{ url_for('static', filename='dark_mode.png') }}" alt="Dark Mode" width="24" height="24" class="dark-mode-toggle" onclick="toggleDarkMode()">
     <div class="container">
-      <h1>News Aggregator</h1>
+      <h1>News Central</h1>
       <div class="search-container">
         <button class="search-button" onclick="toggleSearchBox()">
           <img src="{{ url_for('static', filename='search.png') }}" alt="Search" width="24" height="24">
@@ -117,6 +184,21 @@ html_content = '''
         } else {
           searchBox.style.display = 'none';
         }
+      }
+
+      function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        // #! Save preference
+        if (document.body.classList.contains('dark-mode')) {
+          localStorage.setItem('darkMode', 'enabled');
+        } else {
+          localStorage.setItem('darkMode', 'disabled');
+        }
+      }
+
+      // #! Preference check
+      if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark-mode');
       }
     </script>
   </body>
