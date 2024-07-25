@@ -2,15 +2,21 @@ from flask import Flask, render_template_string, request
 import requests
 import feedparser
 from textblob import TextBlob
+from cachetools import cached, TTLCache
 
 app = Flask(__name__)
 
+#! Cache for 10 minutes
+cache = TTLCache(maxsize=100, ttl=600)
+
+@cached(cache)
 def fetch_news(api_key, query):
     url = f"https://newsapi.org/v2/everything?q={query}&apiKey={api_key}"
     response = requests.get(url)
     news_data = response.json()
     return news_data['articles']
 
+@cached(cache)
 def fetch_rss_feed(url):
     feed = feedparser.parse(url)
     return feed.entries
@@ -40,7 +46,13 @@ def filter_removed_articles(articles):
 
 rss_urls = [
     'https://rss.cnn.com/rss/edition_tech.rss',
-    'https://feeds.bbci.co.uk/news/tech/rss.xml'
+    'https://feeds.bbci.co.uk/news/tech/rss.xml',
+    'https://www.theverge.com/rss/index.xml',
+    'https://techcrunch.com/feed/',
+    'https://www.wired.com/feed/rss',
+    'https://www.engadget.com/rss.xml',
+    'https://arstechnica.com/feed/',
+    'https://feeds.mashable.com/Mashable'
 ]
 
 with open('news_api_key.txt', 'r') as file:
@@ -58,17 +70,28 @@ def home():
     total_articles = len(articles)
     total_pages = (total_articles + articles_per_page - 1) // articles_per_page
     start_idx = (page - 1) * articles_per_page
-    end_idx = start_idx + articles_per_page
+    end_idx = min(start_idx + articles_per_page, total_articles)
     articles_to_show = articles[start_idx:end_idx]
     
     for article in articles_to_show:
         article['sentiment'] = analyze_sentiment(article['description'] if 'description' in article else article['summary'])
-    
+
+    pagination_range = 5
+    start_page = max(1, page - pagination_range)
+    end_page = min(total_pages, page + pagination_range)
+    if end_page - start_page < 2 * pagination_range:
+        if start_page == 1:
+            end_page = min(start_page + 2 * pagination_range, total_pages)
+        if end_page == total_pages:
+            start_page = max(1, end_page - 2 * pagination_range)
+
     return render_template_string(html_content, 
                                   articles=articles_to_show, 
                                   total_pages=total_pages, 
                                   current_page=page, 
-                                  query=query)
+                                  query=query,
+                                  start_page=start_page,
+                                  end_page=end_page)
 
 html_content = '''
 <!doctype html>
@@ -150,6 +173,7 @@ html_content = '''
         display: flex;
         justify-content: center;
         margin-top: 20px;
+        flex-wrap: wrap;
       }
       .pagination a {
         color: #FFFFFF;
@@ -203,9 +227,15 @@ html_content = '''
         </div>
       {% endfor %}
       <div class="pagination">
-        {% for i in range(1, total_pages + 1) %}
+        {% if current_page > 1 %}
+          <a href="/?query={{ query }}&page={{ current_page - 1 }}">&laquo; Previous</a>
+        {% endif %}
+        {% for i in range(start_page, end_page + 1) %}
           <a href="/?query={{ query }}&page={{ i }}" class="{{ 'active' if i == current_page else '' }}">{{ i }}</a>
         {% endfor %}
+        {% if current_page < total_pages %}
+          <a href="/?query={{ query }}&page={{ current_page + 1 }}">Next &raquo;</a>
+        {% endif %}
       </div>
     </div>
     <script>
