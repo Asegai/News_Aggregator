@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string, request
+from flask import Flask, render_template_string, request, abort
 import requests
 import feedparser
 from textblob import TextBlob
@@ -44,6 +44,11 @@ def filter_removed_articles(articles):
            article.get('description') and '[Removed]' not in article['description']
     ]
 
+def validate_query(query):
+    if not query or query.strip() == "":
+        return False
+    return True
+
 rss_urls = [
     'https://rss.cnn.com/rss/edition_tech.rss',
     'https://feeds.bbci.co.uk/news/tech/rss.xml',
@@ -60,6 +65,9 @@ api_key = '9903ee12bcb04fcab57b84705f5a047b'
 @app.route('/')
 def home():
     query = request.args.get('query', 'tech')
+    if not validate_query(query):
+        return render_template_string(error_html, message="Search query cannot be empty.")
+    
     page = int(request.args.get('page', 1))
     articles_per_page = 10
     
@@ -110,6 +118,8 @@ html_content = '''
         color: #FFFFFF;
         transition: background-color 0.3s, color 0.3s;
         text-shadow: 2px 2px 4px #000000;
+        margin: 0;
+        padding: 0;
       }
       .dark-mode { 
         background-color: #121212; 
@@ -124,7 +134,7 @@ html_content = '''
       h1 { 
         text-align: center; 
         font-family: 'The Bride In Hacienda', Arial, sans-serif; 
-        font-size: 3em; 
+        font-size: 3em;
         font-weight: bold;
         color: #FFFFFF;
         text-shadow: 3px 3px 6px #000000;
@@ -182,12 +192,25 @@ html_content = '''
         text-decoration: none;
         background-color: #333;
         border-radius: 5px;
+        font-size: 0.9em;
       }
       .pagination a.active {
         background-color: #000;
       }
       .pagination a:hover {
         background-color: #555;
+      }
+      @media (max-width: 600px) {
+        .container {
+          padding: 10px;
+        }
+        h1 {
+          font-size: 2em;
+        }
+        .pagination a {
+          padding: 3px 6px;
+          font-size: 0.8em;
+        }
       }
     </style>
   </head>
@@ -201,7 +224,7 @@ html_content = '''
         </button>
         <div class="search-box" id="searchBox">
           <form action="/" method="get">
-            <input type="text" name="query" value="{{ query }}" placeholder="Search...">
+            <input type="text" name="query" value="{{ query }}" placeholder="Search..." aria-label="Search">
             <button type="submit">Search</button>
           </form>
         </div>
@@ -262,6 +285,50 @@ html_content = '''
         document.body.classList.add('dark-mode');
       }
     </script>
+  </body>
+</html>
+'''
+
+error_html = '''
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Error</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #FFA500;
+        color: #FFFFFF;
+        text-align: center;
+        padding: 20px;
+        margin: 0;
+      }
+      .error-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #FFA500;
+        border-radius: 5px;
+      }
+      h1, p {
+        color: #FFFFFF;
+        text-shadow: 2px 2px 4px #000000;
+      }
+      a {
+        color: #FFFFFF;
+        text-decoration: underline;
+        text-shadow: 2px 2px 4px #000000;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="error-container">
+      <h1>Error</h1>
+      <p>{{ message }}</p>
+      <a href="/" aria-label="Go back to the homepage">Go back to the homepage</a>
+    </div>
   </body>
 </html>
 '''
