@@ -269,15 +269,15 @@ html_content = '''
           <p>{{ article['description'] if 'description' in article else article.summary }}</p>
           <p class="source">Source: {{ article['source']['name'] if 'source' in article and 'name' in article['source'] else 'Unknown Source' }}</p>
           <p class="sentiment">
-            {% if article['sentiment'] == 'Positive' %} <!--<a href="https://www.flaticon.com/free-icons/happiness" title="happiness icons">Happiness icons created by Freepik - Flaticon</a>-->
+            {% if article['sentiment'] == 'Positive' %}
               <img src="{{ url_for('static', filename='positive_sentiment.png') }}" alt="Positive" width="20" height="20"> 
-              Sentiment: Positive
-            {% elif article['sentiment'] == 'Negative' %} <!--<a href="https://www.flaticon.com/free-icons/sad" title="sad icons">Sad icons created by Freepik - Flaticon</a>-->
+              Reception: Positive <!-- <a href="https://www.flaticon.com/free-icons/happiness" title="happiness icons">Happiness icons created by Freepik - Flaticon</a> -->
+            {% elif article['sentiment'] == 'Negative' %}
               <img src="{{ url_for('static', filename='negative_sentiment.png') }}" alt="Negative" width="20" height="20"> 
-              Sentiment: Negative
+              Reception: Negative <!-- <a href="https://www.flaticon.com/free-icons/sad" title="sad icons">Sad icons created by Freepik - Flaticon</a> -->
             {% else %}
-              <img src="{{ url_for('static', filename='neutral_sentiment.png') }}" alt="Neutral" width="20" height="20"> <!--<a href="https://www.flaticon.com/free-icons/neutral" title="neutral icons">Neutral icons created by justicon - Flaticon</a>-->
-              Sentiment: Neutral
+              <img src="{{ url_for('static', filename='neutral_sentiment.png') }}" alt="Neutral" width="20" height="20">
+              Reception: Neutral <!-- <a href="https://www.flaticon.com/free-icons/neutral" title="neutral icons">Neutral icons created by justicon - Flaticon</a> -->
             {% endif %}
           </p>
           <a href="{{ article['url'] if 'url' in article else article.link }}">Read more</a>
