@@ -234,14 +234,14 @@ html_content = '''
           <h2>{{ article['title'] if 'title' in article else article.title }}</h2>
           <p>{{ article['description'] if 'description' in article else article.summary }}</p>
           <p class="sentiment">
-            {% if article['sentiment'] == 'Positive' %}
+            {% if article['sentiment'] == 'Positive' %} <!--<a href="https://www.flaticon.com/free-icons/happiness" title="happiness icons">Happiness icons created by Freepik - Flaticon</a>-->
               <img src="{{ url_for('static', filename='positive_sentiment.png') }}" alt="Positive" width="20" height="20"> 
               Sentiment: Positive
-            {% elif article['sentiment'] == 'Negative' %}
+            {% elif article['sentiment'] == 'Negative' %} <!--<a href="https://www.flaticon.com/free-icons/sad" title="sad icons">Sad icons created by Freepik - Flaticon</a>-->
               <img src="{{ url_for('static', filename='negative_sentiment.png') }}" alt="Negative" width="20" height="20"> 
               Sentiment: Negative
             {% else %}
-              <img src="{{ url_for('static', filename='neutral_sentiment.png') }}" alt="Neutral" width="20" height="20"> 
+              <img src="{{ url_for('static', filename='neutral_sentiment.png') }}" alt="Neutral" width="20" height="20"> <!--<a href="https://www.flaticon.com/free-icons/neutral" title="neutral icons">Neutral icons created by justicon - Flaticon</a>-->
               Sentiment: Neutral
             {% endif %}
           </p>
