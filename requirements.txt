@@ -1,0 +1,5 @@
+Flask
+requests
+feedparser
+textblob
+cachetools
