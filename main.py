@@ -24,7 +24,10 @@ def fetch_rss_feed(url):
 def aggregate_news(api_key, rss_urls, query):
     articles = fetch_news(api_key, query)
     for url in rss_urls:
-        articles.extend(fetch_rss_feed(url))
+        rss_articles = fetch_rss_feed(url)
+        for article in rss_articles:
+            article['source'] = {'name': url.split('/')[2]}
+        articles.extend(rss_articles)
     return articles
 
 def analyze_sentiment(text):
@@ -129,12 +132,12 @@ html_content = '''
       .container { 
         max-width: 800px; 
         margin: 0 auto; 
-        padding: 20px; 
+        padding: 10px 20px; 
       }
       h1 { 
         text-align: center; 
         font-family: 'The Bride In Hacienda', Arial, sans-serif; 
-        font-size: 3em;
+        font-size: 4em;
         font-weight: bold;
         color: #FFFFFF;
         text-shadow: 3px 3px 6px #000000;
@@ -143,6 +146,11 @@ html_content = '''
         font-weight: bold;
         color: #FFFFFF;
         text-shadow: 2px 2px 4px #000000;
+      }
+      .source {
+        font-size: 0.8em;
+        color: #FFFFFF;
+        margin-bottom: 10px;
       }
       .sentiment { 
         display: flex; 
@@ -200,6 +208,32 @@ html_content = '''
       .pagination a:hover {
         background-color: #555;
       }
+      .copy-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.8);
+        color: #FFFFFF;
+        padding: 10px 20px;
+        border-radius: 10px;
+        text-align: center;
+        z-index: 1000;
+        display: none;
+      }
+      .share-button {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        font-size: 0;
+        margin top: 10px;
+      }
+      .share-button img {
+        display: block;
+        width: 24px;
+        height: 24px;
+      }
       @media (max-width: 600px) {
         .container {
           padding: 10px;
@@ -215,11 +249,11 @@ html_content = '''
     </style>
   </head>
   <body>
-    <img src="{{ url_for('static', filename='dark_mode.png') }}" alt="Dark Mode" width="24" height="24" class="dark-mode-toggle" onclick="toggleDarkMode()">
+    <img src="{{ url_for('static', filename='dark_mode.png') }}" alt="Dark Mode" width="24" height="24" class="dark-mode-toggle" onclick="toggleDarkMode()"> <!--<a href="https://www.flaticon.com/free-icons/dark" title="dark icons">Dark icons created by adriansyah - Flaticon</a>-->
     <div class="container">
-      <h1>News Central</h1>
+      <h1>N e w s  C e n t r a l</h1>
       <div class="search-container">
-        <button class="search-button" onclick="toggleSearchBox()">
+        <button class="search-button" onclick="toggleSearchBox()"> <!--<a href="https://www.flaticon.com/free-icons/search" title="search icons">Search icons created by Freepik - Flaticon</a>-->
           <img src="{{ url_for('static', filename='search.png') }}" alt="Search" width="24" height="24">
         </button>
         <div class="search-box" id="searchBox">
@@ -233,6 +267,7 @@ html_content = '''
         <div class="article">
           <h2>{{ article['title'] if 'title' in article else article.title }}</h2>
           <p>{{ article['description'] if 'description' in article else article.summary }}</p>
+          <p class="source">Source: {{ article['source']['name'] if 'source' in article and 'name' in article['source'] else 'Unknown Source' }}</p>
           <p class="sentiment">
             {% if article['sentiment'] == 'Positive' %} <!--<a href="https://www.flaticon.com/free-icons/happiness" title="happiness icons">Happiness icons created by Freepik - Flaticon</a>-->
               <img src="{{ url_for('static', filename='positive_sentiment.png') }}" alt="Positive" width="20" height="20"> 
@@ -245,7 +280,10 @@ html_content = '''
               Sentiment: Neutral
             {% endif %}
           </p>
-          <a href="{{ article['url'] if 'url' in article else article.link }}" target="_blank">Read more</a>
+          <a href="{{ article['url'] if 'url' in article else article.link }}">Read more</a>
+          <button class="share-button" onclick="copyLink('{{ article['url'] if 'url' in article else article.link }}')"> <!--<a href="https://www.flaticon.com/free-icons/share" title="share icons">Share icons created by Freepik - Flaticon</a>-->
+            <img src="{{ url_for('static', filename='share.png') }}" alt="Share">
+          </button>
         </div>
       {% endfor %}
       <div class="pagination">
@@ -260,6 +298,7 @@ html_content = '''
         {% endif %}
       </div>
     </div>
+    <div id="copyPopup" class="copy-popup">Link copied!</div>
     <script>
       function toggleSearchBox() {
         var searchBox = document.getElementById('searchBox');
@@ -283,6 +322,16 @@ html_content = '''
       // #! Preference check
       if (localStorage.getItem('darkMode') === 'enabled') {
         document.body.classList.add('dark-mode');
+      }
+
+      function copyLink(url) {
+        navigator.clipboard.writeText(url).then(function() {
+          var popup = document.getElementById('copyPopup');
+          popup.style.display = 'block';
+          setTimeout(function() {
+            popup.style.display = 'none';
+          }, 2000);
+        });
       }
     </script>
   </body>
