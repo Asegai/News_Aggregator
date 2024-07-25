@@ -49,14 +49,26 @@ with open('news_api_key.txt', 'r') as file:
 @app.route('/')
 def home():
     query = request.args.get('query', 'tech')
+    page = int(request.args.get('page', 1))
+    articles_per_page = 10
+    
     articles = aggregate_news(api_key, rss_urls, query)
     articles = filter_removed_articles(articles)
-    show_all = request.args.get('show_all', 'false') == 'true'
-    num_articles = len(articles)
-    articles_to_show = articles if show_all else articles[:10]
+    
+    total_articles = len(articles)
+    total_pages = (total_articles + articles_per_page - 1) // articles_per_page
+    start_idx = (page - 1) * articles_per_page
+    end_idx = start_idx + articles_per_page
+    articles_to_show = articles[start_idx:end_idx]
+    
     for article in articles_to_show:
         article['sentiment'] = analyze_sentiment(article['description'] if 'description' in article else article['summary'])
-    return render_template_string(html_content, articles=articles_to_show, num_articles=num_articles, show_all=show_all, query=query)
+    
+    return render_template_string(html_content, 
+                                  articles=articles_to_show, 
+                                  total_pages=total_pages, 
+                                  current_page=page, 
+                                  query=query)
 
 html_content = '''
 <!doctype html>
@@ -134,6 +146,26 @@ html_content = '''
         color: #FFFFFF;
         text-shadow: 2px 2px 4px #000000;
       }
+      .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+      }
+      .pagination a {
+        color: #FFFFFF;
+        text-shadow: 2px 2px 4px #000000;
+        margin: 0 5px;
+        padding: 5px 10px;
+        text-decoration: none;
+        background-color: #333;
+        border-radius: 5px;
+      }
+      .pagination a.active {
+        background-color: #000;
+      }
+      .pagination a:hover {
+        background-color: #555;
+      }
     </style>
   </head>
   <body>
@@ -170,11 +202,11 @@ html_content = '''
           <a href="{{ article['url'] if 'url' in article else article.link }}" target="_blank">Read more</a>
         </div>
       {% endfor %}
-      {% if not show_all and num_articles > 10 %}
-        <div class="more-button">
-          <a href="/?query={{ query }}&show_all=true"><button>More</button></a>
-        </div>
-      {% endif %}
+      <div class="pagination">
+        {% for i in range(1, total_pages + 1) %}
+          <a href="/?query={{ query }}&page={{ i }}" class="{{ 'active' if i == current_page else '' }}">{{ i }}</a>
+        {% endfor %}
+      </div>
     </div>
     <script>
       function toggleSearchBox() {
