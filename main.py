@@ -55,7 +55,8 @@ rss_urls = [
     'https://feeds.mashable.com/Mashable'
 ]
 
-api_key = '9903ee12bcb04fcab57b84705f5a047b'
+with open('news_api_key.txt', 'r') as file:
+    api_key = file.read().strip()
 
 @app.route('/')
 def home():
