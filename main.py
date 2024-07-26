@@ -116,8 +116,8 @@ html_content = '''
     <title>News Central</title>
     <style>
       @font-face {
-        font-family: 'The Bride In Hacienda';
-        src: url("{{ url_for('static', filename='the_bride_in_hacienda.ttf') }}") format('truetype');
+        font-family: 'Title Font';
+        src: url("{{ url_for('static', filename='title_font.ttf') }}") format('truetype');
       }
       body { 
         font-family: Arial, sans-serif; 
@@ -127,7 +127,9 @@ html_content = '''
         text-shadow: 2px 2px 4px #000000;
         margin: 0;
         padding: 0;
-        padding-bottom: 50px;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
       }
       .dark-mode { 
         background-color: #121212; 
@@ -135,13 +137,14 @@ html_content = '''
         text-shadow: 2px 2px 4px #000000;
       }
       .container { 
+        flex: 1;
         max-width: 800px; 
         margin: 0 auto; 
         padding: 10px 20px; 
       }
       h1 { 
         text-align: center; 
-        font-family: 'The Bride In Hacienda', Arial, sans-serif; 
+        font-family: 'Title Font', Arial, sans-serif; 
         font-size: 4em;
         font-weight: bold;
         color: #FFFFFF;
@@ -240,14 +243,11 @@ html_content = '''
         height: 24px;
       }
       .footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
         background-color: #46b6ff;
         color: #FFFFFF;
         text-align: center;
         padding: 10px;
+        box-shadow: 0 -1px 5px rgba(0,0,0,0.3);
       }
       @media (max-width: 600px) {
         .container {
@@ -364,6 +364,10 @@ error_html = '''
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Error</title>
     <style>
+      @font-face {
+        font-family: 'Title Font';
+        src: url("{{ url_for('static', filename='title_font.ttf') }}") format('truetype');
+      }
       body {
         font-family: Arial, sans-serif;
         background-color: #FFA500;
@@ -371,6 +375,19 @@ error_html = '''
         text-align: center;
         padding: 20px;
         margin: 0; 
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .dark-mode { 
+        background-color: #121212; 
+        color: #e0e0e0; 
+      }
+      .dark-mode-toggle { 
+        position: absolute; 
+        top: 10px; 
+        left: 10px; 
+        cursor: pointer; 
       }
       .error-container {
         max-width: 800px;
@@ -391,11 +408,26 @@ error_html = '''
     </style>
   </head>
   <body>
+    <img src="{{ url_for('static', filename='dark_mode.png') }}" alt="Dark Mode" width="24" height="24" class="dark-mode-toggle" onclick="toggleDarkMode()"> 
     <div class="error-container">
       <h1>Error</h1>
       <p>{{ message }}</p>
       <a href="/" aria-label="Go back to the homepage">Go back to the homepage</a>
     </div>
+    <script>
+      function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        if (document.body.classList.contains('dark-mode')) {
+          localStorage.setItem('darkMode', 'enabled');
+        } else {
+          localStorage.setItem('darkMode', 'disabled');
+        }
+      }
+
+      if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark-mode');
+      }
+    </script>
   </body>
 </html>
 '''
@@ -419,20 +451,54 @@ about_html = '''
         text-align: center;
         padding: 20px;
         margin: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .dark-mode { 
+        background-color: #121212; 
+        color: #e0e0e0; 
+      }
+      .dark-mode-toggle { 
+        position: absolute; 
+        top: 10px; 
+        left: 10px; 
+        cursor: pointer; 
       }
       h1 {
         font-family: 'title_font', Arial, sans-serif;
         color: #FFFFFF;
         text-shadow: 2px 2px 4px #000000;
       }
+      a {
+        color: #FFFFFF;
+        text-decoration: underline;
+        text-shadow: 2px 2px 4px #000000;
+      }
     </style>
   </head>
   <body>
+    <img src="{{ url_for('static', filename='dark_mode.png') }}" alt="Dark Mode" width="24" height="24" class="dark-mode-toggle" onclick="toggleDarkMode()"> 
     <h1>About Us</h1>
     <p>Welcome to News Central. We are dedicated to bringing you the latest news from around the world.</p>
     <a href="/" aria-label="Go back to the homepage">Go back to the homepage</a>
+    <script>
+      function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        if (document.body.classList.contains('dark-mode')) {
+          localStorage.setItem('darkMode', 'enabled');
+        } else {
+          localStorage.setItem('darkMode', 'disabled');
+        }
+      }
+
+      if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark-mode');
+      }
+    </script>
   </body>
 </html>
+
 '''
 
 if __name__ == '__main__':
