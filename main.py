@@ -103,6 +103,10 @@ def home():
                                   start_page=start_page,
                                   end_page=end_page)
 
+@app.route('/about')
+def about():
+    return render_template_string(about_html)
+
 html_content = '''
 <!doctype html>
 <html lang="en">
@@ -123,6 +127,7 @@ html_content = '''
         text-shadow: 2px 2px 4px #000000;
         margin: 0;
         padding: 0;
+        padding-bottom: 50px;
       }
       .dark-mode { 
         background-color: #121212; 
@@ -234,6 +239,16 @@ html_content = '''
         width: 24px;
         height: 24px;
       }
+      .footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #46b6ff;
+        color: #FFFFFF;
+        text-align: center;
+        padding: 10px;
+      }
       @media (max-width: 600px) {
         .container {
           padding: 10px;
@@ -299,6 +314,9 @@ html_content = '''
       </div>
     </div>
     <div id="copyPopup" class="copy-popup">Link copied!</div>
+    <div class="footer">
+      <a href="/about">About Us</a>
+    </div>
     <script>
       function toggleSearchBox() {
         var searchBox = document.getElementById('searchBox');
@@ -352,7 +370,7 @@ error_html = '''
         color: #FFFFFF;
         text-align: center;
         padding: 20px;
-        margin: 0;
+        margin: 0; 
       }
       .error-container {
         max-width: 800px;
@@ -378,6 +396,41 @@ error_html = '''
       <p>{{ message }}</p>
       <a href="/" aria-label="Go back to the homepage">Go back to the homepage</a>
     </div>
+  </body>
+</html>
+'''
+
+about_html = '''
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>About Us</title>
+    <style>
+      @font-face {
+        font-family: 'title_font';
+        src: url("{{ url_for('static', filename='title_font.ttf') }}") format('truetype');
+      }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #FFA500;
+        color: #FFFFFF;
+        text-align: center;
+        padding: 20px;
+        margin: 0;
+      }
+      h1 {
+        font-family: 'title_font', Arial, sans-serif;
+        color: #FFFFFF;
+        text-shadow: 2px 2px 4px #000000;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>About Us</h1>
+    <p>Welcome to News Central. We are dedicated to bringing you the latest news from around the world.</p>
+    <a href="/" aria-label="Go back to the homepage">Go back to the homepage</a>
   </body>
 </html>
 '''
