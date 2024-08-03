@@ -9,4 +9,6 @@ The site is hosted at [newscentral.me](http://newscentral.me).
 - **Sentiment Analysis**: Analyzes the sentiment of news articles and displays ratings using small images.
 - **Dark Mode**: Offers a dark mode for better readability in low light environments.
 - **Responsive Design**: Optimized for different screen sizes with a focus on mobile devices and touch-friendly elements.
-- **Last Updated Tracker**: tells you when the news feeds were last update
+- **Last Updated Tracker**: Tells you when the news feeds were last update
+- **Search Button**: Search for news using keywords
+- **Page selector**: Select the page you want to view
