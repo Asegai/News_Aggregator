@@ -80,7 +80,7 @@ api_key = '9903ee12bcb04fcab57b84705f5a047b'
 
 @app.route('/')
 def home():
-    query = request.args.get('query', 'tech')
+    query = request.args.get('query', 'latest')
     if not validate_query(query):
         return render_template_string(error_html, message="Search query cannot be empty.")
     
